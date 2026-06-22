@@ -1,0 +1,5 @@
+Modèle,MAE,RMSE,R²,CV R² (moy),CV R² (std)
+Linear Regression,2.5858,5.8793,0.996,0.995,0.0021
+Random Forest,2.6304,3.7219,0.9984,0.9957,0.0018
+Gradient Boosting,2.5046,3.5404,0.9985,0.9949,0.0024
+MLP (Deep Learning),2.922,6.0849,0.9957,0.9946,0.0019

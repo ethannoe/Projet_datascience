@@ -1,0 +1,7 @@
+Variable 1,Variable 2,Corrélation r,Niveau,Risque multicolinéarité
+TV,Sales,0.9976,ÉLEVÉ (> 0.9),True
+TV,Total_Budget,0.9872,ÉLEVÉ (> 0.9),True
+Total_Budget,Sales,0.986,ÉLEVÉ (> 0.9),True
+Radio,Total_Budget,0.9314,ÉLEVÉ (> 0.9),True
+Radio,Sales,0.8683,MODÉRÉ (0.7–0.9),False
+TV,Radio,0.8667,MODÉRÉ (0.7–0.9),False

@@ -1,0 +1,5 @@
+Modèle,R² Train,R² Test,Gap,Diagnostic
+Linear Regression,0.9951,0.996,-0.0009,✅ Stable
+Random Forest,0.9989,0.9984,0.0005,✅ Stable
+Gradient Boosting,0.9989,0.9985,0.0003,✅ Stable
+MLP (Deep Learning),0.9951,0.9957,-0.0006,✅ Stable

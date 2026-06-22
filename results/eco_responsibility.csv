@@ -1,0 +1,5 @@
+Modèle,Temps entraînement (s),Complexité,Params estimés,Score éco (0–10),Recommandation
+Linear Regression,0.004,Faible,10,10.0,✅ Privilégier
+Random Forest,0.237,Élevée,10000,7.1,✅ Privilégier
+Gradient Boosting,0.533,Élevée,10000,3.5,⚠️ Limiter
+MLP (Deep Learning),0.823,Très élevée,11040,0.0,⚠️ Limiter
