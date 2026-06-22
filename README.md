@@ -210,3 +210,4 @@ shap, streamlit, plotly, fastapi, uvicorn, joblib, pydantic
 ```
 
 Voir [requirements.txt](requirements.txt) pour les versions exactes.
+# Projet_datascience
