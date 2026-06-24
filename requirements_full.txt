@@ -1,0 +1,14 @@
+pandas==2.2.3
+numpy==2.1.3
+scikit-learn==1.6.1
+matplotlib==3.10.0
+seaborn==0.13.2
+shap==0.52.0
+streamlit==1.45.1
+fastapi==0.128.0
+uvicorn[standard]==0.40.0
+joblib==1.4.2
+plotly==5.24.1
+pydantic==2.10.3
+scipy==1.15.3
+requests==2.34.2

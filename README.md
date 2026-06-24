@@ -51,7 +51,10 @@ source .venv/bin/activate        # macOS / Linux
 # .venv\Scripts\activate         # Windows
 
 # 3. Installer les dépendances
+# Dashboard uniquement (Streamlit Cloud) :
 pip install -r requirements.txt
+# Dashboard + API REST (usage local complet) :
+pip install -r requirements_full.txt
 
 # 4. Télécharger le dataset Kaggle
 #    Depuis : https://www.kaggle.com/datasets/harrimansaragih/dummy-advertising-and-sales-data
