@@ -165,10 +165,10 @@ def check_quasi_constant(df: pd.DataFrame, threshold: float = 0.95) -> pd.DataFr
 
 # ─── A23 : Multicolinéarité ───────────────────────────────────────────────────
 
-def check_multicollinearity(df: pd.DataFrame) -> pd.DataFrame:
+def check_multicollinearity(df: pd.DataFrame, threshold: float = 0.7) -> pd.DataFrame:
     """
     Analyse la multicolinéarité entre features via la matrice de corrélation.
-    Signale les paires avec |r| > 0.7 (seuil modéré pour être exhaustif).
+    Signale les paires avec |r| > threshold (défaut 0.7 — seuil modéré pour être exhaustif).
 
     Note architecturale : Total_Budget = TV + Radio + Social_Media par construction
     → corrélation mécanique élevée attendue et non pathologique.
@@ -182,7 +182,7 @@ def check_multicollinearity(df: pd.DataFrame) -> pd.DataFrame:
     for i in range(len(cols)):
         for j in range(i + 1, len(cols)):
             r = float(corr.iloc[i, j])
-            if abs(r) > 0.7:
+            if abs(r) > threshold:
                 records.append({
                     "Variable 1":            cols[i],
                     "Variable 2":            cols[j],

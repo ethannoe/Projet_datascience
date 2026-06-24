@@ -85,6 +85,10 @@ def load_artifacts() -> tuple:
         return None, {}
     meta       = joblib.load(meta_path)
     reg_models = load_all_models("regression", REG_MODEL_NAMES, MODEL_DIR)
+    # Remplace GB par sa version optimisée GridSearch si disponible
+    tuned_path = os.path.join(MODEL_DIR, "regression_Gradient_Boosting_tuned.joblib")
+    if os.path.exists(tuned_path) and "Gradient Boosting" in reg_models:
+        reg_models["Gradient Boosting"] = joblib.load(tuned_path)
     return meta, reg_models
 
 
@@ -359,6 +363,17 @@ def page_model_performance(meta: dict, reg_models: dict) -> None:
                 f"Meilleure configuration : `{gs_params}`  \n"
                 f"Score CV optimisé : **{gs_score:.4f}**"
             )
+            tuned_path = os.path.join(MODEL_DIR, "regression_Gradient_Boosting_tuned.joblib")
+            if os.path.exists(tuned_path):
+                default_cv = next(
+                    (v for k, v in meta.get("reg_results", {}).items() if "Gradient" in k and "cv_mean" in str(v)),
+                    None,
+                )
+                st.success(
+                    "Le modèle **Gradient Boosting optimisé** (tuned) est utilisé dans tout le dashboard "
+                    f"et le simulateur. Score CV tuned : **{gs_score:.4f}** "
+                    f"— le pipeline GridSearch est directement déployé."
+                )
 
     st.markdown("---")
 

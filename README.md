@@ -145,12 +145,17 @@ curl -X POST http://localhost:8000/predict \
 
 ## Modèles implémentés
 
-| Modèle | Type | Rôle | Score éco |
-|--------|------|------|-----------|
-| Linear / Logistic Regression | Baseline | Référence interprétable | ✅ Meilleur |
+| Modèle | Type | Rôle | Score éco (entraînement) |
+|--------|------|------|--------------------------|
+| Linear / Logistic Regression | Baseline | Référence interprétable | ✅ Privilégier |
 | Random Forest | Ensemble Bagging | Effets non-linéaires, FI native | 🟡 Acceptable |
-| **Gradient Boosting** | Ensemble Boosting | **Modèle final recommandé** | ✅ Recommandé |
+| **Gradient Boosting** | Ensemble Boosting | **Modèle final recommandé** | ⚠️ Limiter |
 | MLP (Deep Learning) | Réseau de neurones | Comparaison DL vs ML | ⚠️ Limiter |
+
+> **Note** : le score éco mesure la consommation CPU à l'**entraînement** (proxy : temps de fit).
+> Gradient Boosting est marqué "⚠️ Limiter" pour l'entraînement, mais reste le **modèle recommandé en production**
+> grâce à son inference < 3 ms, son interprétabilité (SHAP, feature importance) et son meilleur R².
+> Voir `results/eco_responsibility.csv` pour les scores détaillés.
 
 ---
 
