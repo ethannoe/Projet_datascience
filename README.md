@@ -1,5 +1,15 @@
 # Marketing ROI Optimization — Système Intelligent Multi-Modèles
 
+---
+title: Marketing ROI Optimizer
+colorFrom: blue
+colorTo: orange
+sdk: streamlit
+sdk_version: 1.45.1
+app_file: dashboard/app.py
+pinned: false
+---
+
 Projet M1 Data Engineering & AI — EFREI 2025-26  
 Matière : Data Science / Machine Learning Supervisé
 
@@ -33,7 +43,8 @@ marketing_roi_project/
 ├── results/                        # Visualisations EDA, résidus, SHAP, courbes (généré)
 ├── saved_models/                   # Pipelines sérialisés .joblib (généré)
 ├── train.py                        # Script principal d'entraînement
-└── requirements.txt
+├── requirements.txt                # Dashboard (Streamlit Cloud / Hugging Face)
+└── requirements_full.txt           # Dashboard + API REST (usage local complet)
 ```
 
 ---
@@ -129,20 +140,24 @@ Documentation interactive : `http://localhost:8000/docs` (Swagger)
 ```bash
 curl -X POST http://localhost:8000/predict \
   -H "Content-Type: application/json" \
-  -d '{"TV": 120.5, "Radio": 18.0, "Social_Media": 12.3, "Influencer": "Macro", "model": "Gradient Boosting"}'
+  -d '{"TV": 80.0, "Radio": 18.0, "Social_Media": 5.0, "Influencer": "Macro", "model": "Gradient Boosting"}'
 ```
 
 **Réponse :**
 ```json
 {
-  "predicted_sales_M": 18.4321,
-  "roi_estimate": 1.2341,
-  "total_budget_M": 150.8,
-  "profit_estimate_M": -132.3679,
+  "predicted_sales_M": 284.71,
+  "roi_estimate": 2.76,
+  "total_budget_M": 103.0,
+  "profit_estimate_M": 181.71,
   "model_used": "Gradient Boosting",
   "timestamp": "2026-06-22T..."
 }
 ```
+
+> Valeurs issues du modèle Gradient Boosting entraîné (R²=0.9985).
+> TV domine les prédictions (corrélation r=0.999) : avec TV=80 M€,
+> les ventes prédites atteignent 284.71 M€ — Radio et Social Media ont un impact marginal comparativement.
 
 ---
 
@@ -214,8 +229,7 @@ saved_models/
 
 ```
 pandas, numpy, scikit-learn, matplotlib, seaborn
-shap, streamlit, plotly, fastapi, uvicorn, joblib, pydantic
+shap, streamlit, plotly, joblib, scipy, requests
 ```
 
-Voir [requirements.txt](requirements.txt) pour les versions exactes.
-# Projet_datascience
+Voir [requirements.txt](requirements.txt) pour le dashboard, [requirements_full.txt](requirements_full.txt) pour l'installation complète avec API.

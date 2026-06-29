@@ -46,7 +46,7 @@ MODEL_DIR = "saved_models"
 API_BASE  = "http://localhost:8000"
 
 st.set_page_config(
-    page_title="Marketing ROI — Tableau de bord",
+    page_title="Marketing ROI  Tableau de bord",
     layout="wide",
     initial_sidebar_state="expanded",
 )
@@ -121,28 +121,54 @@ def _predict_via_api(tv: float, radio: float, social: float,
 
 # ─── Sidebar ──────────────────────────────────────────────────────────────────
 
+def _on_metier_change() -> None:
+    st.session_state.sidebar_page = st.session_state.radio_metier
+
+
+def _on_admin_change() -> None:
+    st.session_state.sidebar_page = st.session_state.radio_admin
+
+
 def render_sidebar() -> str:
     st.sidebar.title("Marketing ROI")
     st.sidebar.caption("Tableau de bord décisionnel")
     st.sidebar.markdown("---")
-    page = st.sidebar.radio(
-        "Navigation",
-        [
-            "Tableau de bord",
-            "Analyse des canaux",
-            "Performance des modèles",
-            "Simulateur budgétaire",
-        ],
+
+    METIER_PAGES = ["Tableau de bord", "Analyse des canaux", "Simulateur budgétaire"]
+    ADMIN_PAGES  = ["Performance des modèles"]
+
+    if "sidebar_page" not in st.session_state:
+        st.session_state.sidebar_page = "Tableau de bord"
+
+    current = st.session_state.sidebar_page
+
+    st.sidebar.markdown("**Vue métier**")
+    st.sidebar.radio(
+        "metier", METIER_PAGES,
+        index=METIER_PAGES.index(current) if current in METIER_PAGES else None,
+        label_visibility="collapsed",
+        key="radio_metier",
+        on_change=_on_metier_change,
     )
+
+    st.sidebar.markdown("**Vue technique**")
+    st.sidebar.radio(
+        "admin", ADMIN_PAGES,
+        index=ADMIN_PAGES.index(current) if current in ADMIN_PAGES else None,
+        label_visibility="collapsed",
+        key="radio_admin",
+        on_change=_on_admin_change,
+    )
+
     st.sidebar.markdown("---")
     st.sidebar.caption("Projet M1 Data Engineering · EFREI 2025-26")
-    return page
+    return st.session_state.sidebar_page
 
 
 # ─── Page 1 : Tableau de bord ────────────────────────────────────────────────
 
 def page_overview(df: pd.DataFrame) -> None:
-    st.title("Tableau de bord — KPIs Marketing")
+    st.title("Tableau de bord / KPIs Marketing")
 
     c1, c2, c3, c4, c5 = st.columns(5)
     c1.metric("Campagnes analysées",   f"{len(df)}")
@@ -195,13 +221,17 @@ def page_overview(df: pd.DataFrame) -> None:
         st.plotly_chart(fig, use_container_width=True)
 
     with col_r2:
-        fig = px.box(
-            df, x="Influencer", y="Sales", color="Influencer",
-            title="Ventes par type d'influenceur",
-            labels={"Sales": "Ventes (M€)"},
+        avg_sales = df.groupby("Influencer", as_index=False)["Sales"].mean()
+        avg_sales["Sales"] = avg_sales["Sales"].round(1)
+        fig = px.bar(
+            avg_sales, x="Influencer", y="Sales", color="Influencer",
+            title="Ventes moyennes par type d'influenceur",
+            labels={"Sales": "Ventes moyennes (M€)", "Influencer": "Type d'influenceur"},
             color_discrete_sequence=px.colors.qualitative.Set2,
+            text="Sales",
         )
-        fig.update_layout(showlegend=False)
+        fig.update_traces(textposition="outside")
+        fig.update_layout(showlegend=False, bargap=0.3)
         st.plotly_chart(fig, use_container_width=True)
 
     st.subheader("Top 10 campagnes par ROI")
@@ -236,9 +266,11 @@ def page_channels(df: pd.DataFrame) -> None:
     )
     st.plotly_chart(fig, use_container_width=True)
     st.markdown(
-        "> **A retenir** : TV est le canal le plus corrélé aux ventes (r ≈ 0.9). "
-        "Radio et Social Media ont un impact modéré mais complémentaire. "
-        "Les budgets sont quasi-indépendants entre eux — pas d'effet croisé dominant."
+        "> **A retenir** : TV est le canal dominant avec une corrélation quasi-parfaite (r = 0.9995). "
+        "Radio a un impact significatif (r = 0.87). "
+        "Social Media a une corrélation faible (r = 0.53)  son ROI élevé à faible budget est un artefact "
+        "dû au fait que ces campagnes sont toujours accompagnées d'un fort budget TV. "
+        "Les budgets sont quasi-indépendants entre eux  pas d'effet croisé dominant."
     )
 
     # Scatter budget → ventes
@@ -252,7 +284,7 @@ def page_channels(df: pd.DataFrame) -> None:
     fig = px.scatter(
         df, x=channel, y="Sales", color="Influencer",
         trendline="ols",
-        title=f"Budget {label_ch} vs Ventes — tendance par type d'influenceur",
+        title=f"Budget {label_ch} vs Ventes  tendance par type d'influenceur",
         labels={channel: f"Budget {label_ch} (M€)", "Sales": "Ventes (M€)"},
         color_discrete_sequence=px.colors.qualitative.Set1,
         opacity=0.75,
@@ -260,7 +292,7 @@ def page_channels(df: pd.DataFrame) -> None:
     st.plotly_chart(fig, use_container_width=True)
 
     # ROI marginal
-    st.subheader("Rendement marginal — retour sur investissement par canal")
+    st.subheader("Rendement marginal  retour sur investissement par canal")
     st.caption(
         "Un ROI décroissant avec le budget signale une saturation publicitaire : "
         "chaque euro supplémentaire rapporte de moins en moins."
@@ -289,10 +321,10 @@ def page_channels(df: pd.DataFrame) -> None:
     st.markdown("""
 | Canal | Constat | Recommandation |
 |-------|---------|----------------|
-| **TV** | Canal le plus impactant sur les ventes | Maintenir un budget TV solide comme levier principal |
-| **Social Media** | Meilleur ROI marginal à faible budget | Augmenter en priorité avant TV pour maximiser le ROI |
-| **Radio** | Impact modéré, saturation rapide | Utiliser en complément, plafonner à ~30 M€ |
-| **Influencer Mega** | Amplifie les campagnes à fort budget TV | Réserver aux campagnes > 150 M€ budget total |
+| **TV** | Canal dominant  r = 0.9995, détermine 99% des ventes | **Prioriser en premier** : c'est le levier principal, max à 100 M€ |
+| **Radio** | Impact fort (r = 0.87), saturation vers 7 M€ de ROI max | Ajouter en complément TV, plafonner à ~30 M€ |
+| **Social Media** | Corrélation faible (r = 0.53), saturation ROI dès 0.9 M€ | Levier secondaire uniquement  son ROI apparent est un artefact dû à TV |
+| **Influencer Mega** | Amplifie les campagnes à fort budget TV | Réserver aux campagnes avec TV > 70 M€ |
 | **Influencer Micro / Nano** | Meilleur ROI sur budgets restreints | Privilégier pour les campagnes ciblées à petit budget |
     """)
 
@@ -303,7 +335,7 @@ def page_model_performance(meta: dict, reg_models: dict) -> None:
     st.title("Performance des modèles")
     st.markdown(
         "Comparaison des quatre algorithmes entraînés et identification des variables "
-        "qui influencent le plus les ventes — pour choisir le modèle le plus fiable "
+        "qui influencent le plus les ventes  pour choisir le modèle le plus fiable "
         "et comprendre sur quoi il s'appuie."
     )
 
@@ -312,7 +344,7 @@ def page_model_performance(meta: dict, reg_models: dict) -> None:
         return
 
     # ── Section 1 : Comparaison des modèles ──────────────────────────────────
-    st.subheader("Comparaison des modèles — Prédiction des ventes")
+    st.subheader("Comparaison des modèles  Prédiction des ventes")
 
     comp = meta["comparison_reg"].copy()
 
@@ -332,7 +364,7 @@ def page_model_performance(meta: dict, reg_models: dict) -> None:
         fig = px.bar(
             comp, x="Modèle", y="R²", color="Modèle",
             color_discrete_sequence=px.colors.qualitative.Set2,
-            title="Précision par modèle (R² test — plus haut = mieux)",
+            title="Précision par modèle (R² test  plus haut = mieux)",
             text=comp["R²"].apply(lambda v: f"{v:.4f}"),
         )
         fig.update_traces(textposition="outside")
@@ -372,7 +404,7 @@ def page_model_performance(meta: dict, reg_models: dict) -> None:
                 st.success(
                     "Le modèle **Gradient Boosting optimisé** (tuned) est utilisé dans tout le dashboard "
                     f"et le simulateur. Score CV tuned : **{gs_score:.4f}** "
-                    f"— le pipeline GridSearch est directement déployé."
+                    f" le pipeline GridSearch est directement déployé."
                 )
 
     st.markdown("---")
@@ -412,7 +444,7 @@ def page_model_performance(meta: dict, reg_models: dict) -> None:
                 x=importances.values,
                 y=display_names,
                 orientation="h",
-                title=f"Importance des canaux — {model_name}",
+                title=f"Importance des canaux  {model_name}",
                 color=importances.values,
                 color_continuous_scale="Blues",
                 labels={"x": "Contribution relative", "y": "Variable"},
@@ -425,7 +457,7 @@ def page_model_performance(meta: dict, reg_models: dict) -> None:
     st.markdown(
         "> **Lecture** : TV est généralement le canal le plus déterminant, "
         "suivi de Social Media. Radio et le type d'influenceur ont un impact secondaire. "
-        "Ces résultats sont cohérents entre Random Forest et Gradient Boosting — "
+        "Ces résultats sont cohérents entre Random Forest et Gradient Boosting  "
         "ce qui renforce la fiabilité de l'interprétation."
     )
 
@@ -475,7 +507,7 @@ def page_model_performance(meta: dict, reg_models: dict) -> None:
                 x="importance_mean", y="feature",
                 error_x="importance_std",
                 orientation="h",
-                title=f"Permutation Importance — {meta.get('best_reg_model', '')}",
+                title=f"Permutation Importance  {meta.get('best_reg_model', '')}",
                 labels={
                     "importance_mean": "Baisse de R² si la variable est mélangée",
                     "feature": "Variable",
@@ -505,9 +537,10 @@ def page_simulator(reg_models: dict, meta: dict, api_ok: bool) -> None:
 
     with col_inp:
         st.subheader("Paramètres du scénario")
-        tv         = st.slider("Budget TV (M€)",           0.0, 300.0, 100.0, step=5.0)
-        radio      = st.slider("Budget Radio (M€)",         0.0,  50.0,  15.0, step=1.0)
-        social     = st.slider("Budget Social Media (M€)",  0.0,  60.0,  10.0, step=1.0)
+        st.caption("Plages basées sur les données d'entraînement (TV : 10–100 M€, Radio : 0–49 M€, Social Media : 0–14 M€)")
+        tv         = st.slider("Budget TV (M€)",           10.0, 100.0,  54.0, step=1.0)
+        radio      = st.slider("Budget Radio (M€)",         0.0,  49.0,  18.0, step=0.5)
+        social     = st.slider("Budget Social Media (M€)",  0.0,  14.0,   3.0, step=0.1)
         influencer = st.selectbox("Type d'influenceur", ["Mega", "Macro", "Micro", "Nano"])
         total_budget = tv + radio + social
 
@@ -572,7 +605,7 @@ def page_simulator(reg_models: dict, meta: dict, api_ok: bool) -> None:
 
     # Analyse de sensibilité
     st.markdown("---")
-    st.subheader("Analyse de sensibilité — impact marginal de chaque canal")
+    st.subheader("Analyse de sensibilité  impact marginal de chaque canal")
     st.caption(
         "Chaque graphique fait varier un seul canal (les deux autres restent fixes) "
         "pour mesurer son effet direct sur les ventes prédites."
@@ -583,7 +616,7 @@ def page_simulator(reg_models: dict, meta: dict, api_ok: bool) -> None:
     chan_labels = [("TV", "TV"), ("Radio", "Radio"), ("Social_Media", "Social Media")]
 
     for col_w, (chan, label) in zip(cols_sens, chan_labels):
-        max_budget   = {"TV": 300.0, "Radio": 60.0, "Social_Media": 80.0}[chan]
+        max_budget   = {"TV": 100.0, "Radio": 49.0, "Social_Media": 14.0}[chan]
         budget_range = np.linspace(0, max_budget, 60)
         preds_s = [
             float(reg_models[default_model].predict(
